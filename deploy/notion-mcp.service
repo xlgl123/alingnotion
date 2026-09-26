@@ -1,0 +1,35 @@
+[Unit]
+Description=Aling private Notion MCP server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=notion-mcp
+Group=notion-mcp
+WorkingDirectory=/opt/notion-mcp
+EnvironmentFile=/etc/notion-mcp.env
+ExecStart=/opt/notion-mcp/.venv/bin/aling-notion-mcp
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=20s
+
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/notion-mcp
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
+
