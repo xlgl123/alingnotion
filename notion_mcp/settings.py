@@ -35,7 +35,7 @@ class Settings:
     port: int = 8091
     public_host: str = "localhost"
     allowed_origins: tuple[str, ...] = ()
-    claude_unauthenticated_cidrs: tuple[str, ...] = ("160.79.104.0/21",)
+    claude_unauthenticated_cidrs: tuple[str, ...] = ()
     allow_unauthenticated: bool = False
     search_db_path: Path = Path("F:/Codex/data/notion-mcp/search.db")
     search_refresh_limit: int = 200
@@ -68,7 +68,7 @@ class Settings:
             public_host=public_host,
             allowed_origins=origins,
             claude_unauthenticated_cidrs=_csv(
-                os.getenv("CLAUDE_MCP_UNAUTHENTICATED_CIDRS", "160.79.104.0/21")
+                os.getenv("CLAUDE_MCP_UNAUTHENTICATED_CIDRS", "")
             ),
             allow_unauthenticated=_bool(os.getenv("MCP_ALLOW_UNAUTHENTICATED", "false")),
             search_db_path=Path(os.getenv("SEARCH_DB_PATH", str(_default_search_path()))),

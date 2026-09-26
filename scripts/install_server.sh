@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-package_path="/home/ubuntu/aling-notion-mcp-20260721.tar.gz"
-package_sha256="d82f97c2d8df3233e60e16768b881edc1ad50d40c4e5bbcc99eb0125500baf09"
-install_dir="/opt/notion-mcp"
-state_dir="/var/lib/notion-mcp"
-env_path="/etc/notion-mcp.env"
-unit_path="/etc/systemd/system/notion-mcp.service"
+package_path="${PACKAGE_PATH:?Set PACKAGE_PATH to the release archive}"
+package_sha256="${PACKAGE_SHA256:?Set PACKAGE_SHA256 to the release archive checksum}"
+install_dir="${INSTALL_DIR:-/opt/notion-mcp}"
+state_dir="${STATE_DIR:-/var/lib/notion-mcp}"
+env_path="${ENV_PATH:-/etc/notion-mcp.env}"
+unit_path="${UNIT_PATH:-/etc/systemd/system/notion-mcp.service}"
+public_host="${NOTION_MCP_PUBLIC_HOST:?Set NOTION_MCP_PUBLIC_HOST}"
+allowed_origins="${NOTION_MCP_ALLOWED_ORIGINS:-https://${public_host}}"
+claude_cidrs="${CLAUDE_MCP_UNAUTHENTICATED_CIDRS:-}"
 
 IFS= read -r notion_token
 if [[ -z "${notion_token}" ]]; then
@@ -35,8 +38,9 @@ sudo -n "${install_dir}/.venv/bin/pip" install --no-cache-dir --no-deps "${insta
 
 mcp_token=$(sudo -n "${install_dir}/.venv/bin/python" -c 'import secrets; print(secrets.token_urlsafe(48))')
 env_tmp=$(mktemp)
+unit_tmp=$(mktemp)
 cleanup() {
-  rm -f "${env_tmp}"
+  rm -f "${env_tmp}" "${unit_tmp}"
 }
 trap cleanup EXIT
 
@@ -49,15 +53,27 @@ trap cleanup EXIT
   printf 'TZ=Asia/Shanghai\n'
   printf 'NOTION_MCP_HOST=127.0.0.1\n'
   printf 'NOTION_MCP_PORT=8091\n'
-  printf 'NOTION_MCP_PUBLIC_HOST=notion.example.com\n'
-  printf 'NOTION_MCP_ALLOWED_ORIGINS=https://notion.example.com\n'
-  printf 'CLAUDE_MCP_UNAUTHENTICATED_CIDRS=160.79.104.0/21\n'
-  printf 'SEARCH_DB_PATH=/var/lib/notion-mcp/search.db\n'
+  printf 'NOTION_MCP_PUBLIC_HOST=%s\n' "${public_host}"
+  printf 'NOTION_MCP_ALLOWED_ORIGINS=%s\n' "${allowed_origins}"
+  printf 'CLAUDE_MCP_UNAUTHENTICATED_CIDRS=%s\n' "${claude_cidrs}"
+  printf 'SEARCH_DB_PATH=%s/search.db\n' "${state_dir}"
   printf 'SEARCH_REFRESH_LIMIT=200\n'
 } >"${env_tmp}"
 
+python3 - "${install_dir}/deploy/notion-mcp.service" "${unit_tmp}" "${install_dir}" "${env_path}" "${state_dir}" <<'PY'
+from pathlib import Path
+import sys
+
+template_path, output_path, install_dir, env_path, state_dir = sys.argv[1:]
+content = Path(template_path).read_text(encoding="utf-8")
+content = content.replace("__INSTALL_DIR__", install_dir)
+content = content.replace("__ENV_PATH__", env_path)
+content = content.replace("__STATE_DIR__", state_dir)
+Path(output_path).write_text(content, encoding="utf-8")
+PY
+
 sudo -n install -o root -g root -m 0600 "${env_tmp}" "${env_path}"
-sudo -n install -o root -g root -m 0644 "${install_dir}/deploy/notion-mcp.service" "${unit_path}"
+sudo -n install -o root -g root -m 0644 "${unit_tmp}" "${unit_path}"
 sudo -n systemctl daemon-reload
 sudo -n systemctl enable --now notion-mcp.service
 

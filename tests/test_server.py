@@ -27,6 +27,7 @@ def settings(tmp_path: Path) -> Settings:
         mcp_access_token="mcp-test-token",
         public_host="notion.test",
         allowed_origins=("https://notion.test",),
+        claude_unauthenticated_cidrs=("160.79.104.0/21",),
         search_db_path=tmp_path / "search.db",
     )
 

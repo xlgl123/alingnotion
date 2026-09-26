@@ -7,9 +7,9 @@ Wants=network-online.target
 Type=simple
 User=notion-mcp
 Group=notion-mcp
-WorkingDirectory=/opt/notion-mcp
-EnvironmentFile=/etc/notion-mcp.env
-ExecStart=/opt/notion-mcp/.venv/bin/aling-notion-mcp
+WorkingDirectory=__INSTALL_DIR__
+EnvironmentFile=__ENV_PATH__
+ExecStart=__INSTALL_DIR__/.venv/bin/aling-notion-mcp
 Restart=on-failure
 RestartSec=5s
 TimeoutStopSec=20s
@@ -27,7 +27,7 @@ LockPersonality=true
 CapabilityBoundingSet=
 AmbientCapabilities=
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
-ReadWritePaths=/var/lib/notion-mcp
+ReadWritePaths=__STATE_DIR__
 UMask=0077
 
 [Install]

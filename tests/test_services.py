@@ -111,6 +111,7 @@ def service(tmp_path: Path) -> ToolService:
     settings = Settings(
         notion_token="notion-secret",
         mcp_access_token="mcp-secret",
+        diary_data_source_id=DIARY_ID,
         search_db_path=tmp_path / "search.db",
         search_refresh_limit=20,
     )

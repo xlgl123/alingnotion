@@ -602,8 +602,8 @@ DNS：
 
 部署前备份范围与实际结果：
 
-- 已备份 `/etc/systemd/system` 与 `/etc/cloudflared`：`/home/ubuntu/notion-mcp-predeploy-20260721-201229.tar.gz`。
-- 已备份创建专用账户可能涉及的账户文件：`/home/ubuntu/notion-mcp-predeploy-accounts-20260721-201229.tar.gz`。
+- 已备份 `/etc/systemd/system` 与 `/etc/cloudflared`：`${BACKUP_DIR}/notion-mcp-predeploy.tar.gz`。
+- 已备份创建专用账户可能涉及的账户文件：`${BACKUP_DIR}/notion-mcp-predeploy-accounts.tar.gz`。
 - 两份归档均已执行 gzip/tar 完整性检查并记录 SHA-256，权限均为 `600`。
 - 目标目录和服务在部署前均不存在，因此没有覆盖旧版 Notion MCP。
 - 已记录关键服务、监听端口和磁盘状态；未修改秘密基地目录、数据库或服务。
